@@ -4,9 +4,9 @@ import { r } from '../scripts/utils'
 const getManifest = () => {
   return {
     manifest_version: 3,
-    name: 'Getting Started Example',
-    description: 'Build an Extension!',
-    version: '1.0',
+    name: 'Google Meet Slack Emoji Reactions',
+    description: 'Google MeetにSlackの絵文字資産を使ったリアクション機能を提供します。',
+    version: '0.1',
     action: {
       default_popup: './dist/popup/index.html'
     },
@@ -14,7 +14,7 @@ const getManifest = () => {
       'identity'
     ],
     oauth2: {
-      client_id: '482857465152-0he2aisvo47gl5itdp5ahkk8qpu7tio4.apps.googleusercontent.com',
+      client_id: '193910923857-psarj8ct1c9ui0f4e9glmfehg5mcdhlt.apps.googleusercontent.com',
       scopes: ['https://www.googleapis.com/auth/userinfo.email']
     }
   }
