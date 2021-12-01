@@ -7,6 +7,7 @@ const getManifest = () => {
     name: 'Google Meet Slack Emoji Reactions',
     description: 'Google MeetにSlackの絵文字資産を使ったリアクション機能を提供します。',
     version: '0.1',
+    options_page: './dist/options/index.html',
     action: {
       default_popup: './dist/popup/index.html'
     },
