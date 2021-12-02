@@ -22,7 +22,7 @@
           <button @click="onCheckToken" class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700" type="button">
             Save
           </button>
-          <button class="font-bold text-blue-500 py-2 px-4 rounded hover:text-blue-700" type="button">
+          <button @click="onClear" class="font-bold text-blue-500 py-2 px-4 rounded hover:text-blue-700" type="button">
             Clear
           </button>
         </div>
@@ -65,5 +65,11 @@ const onCheckToken = () => {
       errorMessage.value = error
       console.error('There was an error!', error)
     })
+}
+
+const onClear = () => {
+  slackOauthToken.value = ''
+  errorMessage.value = ''
+  // TODO: clear local storage
 }
 </script>
