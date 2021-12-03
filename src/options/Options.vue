@@ -6,9 +6,12 @@
     <div class="container mx-auto my-3 w-4/5">
       <form>
         <div class="mb-6">
-          <label class="block text-gray-700 text-sm font-bold mb-2" for="slack_oauth_token">
-            Slack OAuth Token
-          </label>
+          <div class="flex">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="slack_oauth_token">
+              Slack OAuth Token
+            </label>
+            <span v-show="isAuthenticated" class="block ml-1"><CheckCircleIcon class="h-5 w-5 text-green-500" /></span>
+          </div>
           <input v-model="slackOauthToken" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight" id="slack_oauth_token" type="password" placeholder="Slack OAuth Token Here">
         </div>
 
@@ -32,10 +35,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onBeforeMount } from 'vue'
+import { CheckCircleIcon } from '@heroicons/vue/solid'
 
 const slackOauthToken = ref('')
 const errorMessage = ref('')
+const isAuthenticated = ref(false)
+
+onBeforeMount(() => {
+  getAllStorageLocalData().then(items => {
+    if (items.slackOauthToken) {
+      // set local cache
+      slackOauthToken.value = items.slackOauthToken
+      // show check mark
+      isAuthenticated.value = true
+    }
+  })
+})
 
 // 有効なSlackOAuthTokenか確認
 function onCheckToken() {
@@ -60,6 +76,8 @@ function onCheckToken() {
       // set local storage
       chrome.storage.local.set({'slackOauthToken': slackOauthToken.value}, function() {
         console.log('set local storage')
+        // show check mark
+        isAuthenticated.value = true
       })
     })
     .catch(error => {
@@ -77,6 +95,19 @@ function onClear() {
   // clear local storage
   chrome.storage.local.clear(function() {
     console.log('clear local storage')
+    // hidden check mark
+    isAuthenticated.value = false
+  })
+}
+
+function getAllStorageLocalData() {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.get(null, (items) => {
+      if (chrome.runtime.lastError) {
+        return reject(chrome.runtime.lastError)
+      }
+      resolve(items)
+    })
   })
 }
 </script>
