@@ -1,6 +1,6 @@
 <template>
   <div class="flex justify-between m-2">
-    <p>Hello World!!</p>
+    <p>Google Meet Slack Emoji Reactions &#x1F44D;</p>
     <a :href="optionsIndexUrl" target="_blank" class="hover:opacity-75">
       <CogIcon class="h-5 w-5 text-gray-500"/>
     </a>
