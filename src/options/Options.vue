@@ -37,6 +37,7 @@ import { ref } from 'vue'
 const slackOauthToken = ref('')
 const errorMessage = ref('')
 
+// 有効なSlackOAuthTokenか確認
 function onCheckToken() {
   const slackAuthTestUrl = "https://slack.com/api/auth.test/"
   const requestOptions = {
