@@ -12,7 +12,8 @@ const getManifest = () => {
       default_popup: './dist/popup/index.html'
     },
     permissions: [
-      'identity'
+      'identity',
+      'storage'
     ],
     host_permissions: [
       'https://slack.com/api/*'

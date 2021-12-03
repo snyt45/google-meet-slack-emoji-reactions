@@ -37,13 +37,11 @@ import { ref } from 'vue'
 const slackOauthToken = ref('')
 const errorMessage = ref('')
 
-const onCheckToken = () => {
-  console.log('call onCheckToken')
-
+function onCheckToken() {
   const slackAuthTestUrl = "https://slack.com/api/auth.test/"
   const requestOptions = {
     method: "POST",
-    headers: { 
+    headers: {
       "Content-Type": "application/json",
       "Authorization": 'Bearer ' + slackOauthToken.value
     },
@@ -58,7 +56,10 @@ const onCheckToken = () => {
       }
       // clear error message
       errorMessage.value = ''
-      // TODO: save local storage
+      // set local storage
+      chrome.storage.local.set({'slackOauthToken': slackOauthToken.value}, function() {
+        console.log('set local storage')
+      })
     })
     .catch(error => {
       // set error message
@@ -67,9 +68,14 @@ const onCheckToken = () => {
     })
 }
 
-const onClear = () => {
+function onClear() {
+  // clear slack oauth token
   slackOauthToken.value = ''
+  // clear error message
   errorMessage.value = ''
-  // TODO: clear local storage
+  // clear local storage
+  chrome.storage.local.clear(function() {
+    console.log('clear local storage')
+  })
 }
 </script>
