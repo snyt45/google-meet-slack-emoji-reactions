@@ -7,19 +7,8 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { CogIcon } from '@heroicons/vue/solid'
 
-import { defineComponent } from 'vue'
-export default defineComponent({
-  name: 'Popup',
-  components: { CogIcon },
-  setup() {
-    const optionsIndexUrl = chrome.runtime.getURL("dist/options/index.html")
-
-    return {
-      optionsIndexUrl
-    }
-  },
-})
+const optionsIndexUrl = chrome.runtime.getURL("dist/options/index.html")
 </script>
