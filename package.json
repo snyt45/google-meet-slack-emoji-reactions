@@ -2,9 +2,11 @@
   "name": "sample-project",
   "version": "0.0.0",
   "scripts": {
-    "build": "run-s clear build:manifest build:popup",
+    "build": "run-s clear build:manifest build:popup build:content build:background",
     "build:manifest": "esno src/manifest.ts",
     "build:popup": "vite build",
+    "build:content": "esbuild src/contentScripts/index.ts --bundle --minify --outfile=extension/dist/contentScripts/index.js",
+    "build:background": "esbuild src/background/index.ts --bundle --minify --outfile=extension/background.js",
     "clear": "rimraf extension/dist extension/manifest.json"
   },
   "dependencies": {
