@@ -3,14 +3,12 @@
     <h1 class="text-lg text-bold text-white">
       Google Meet Slack Emoji Reactions &#x1F44D;
     </h1>
-    <div class="flex">
-      <button @click="onFetchEmojiList" class="mr-2 hover:opacity-75" type="button">
-        <RefreshIcon class="h-6 w-6 text-gray-700"/>
-      </button>
-      <a :href="optionsIndexUrl" target="_blank" class="hover:opacity-75">
-        <CogIcon class="h-6 w-6 text-gray-700"/>
-      </a>
-    </div>
+    <a :href="optionsIndexUrl" target="_blank" class="hover:opacity-75">
+      <CogIcon class="h-6 w-6 text-gray-700"/>
+    </a>
+  </div>
+
+  <div id="error_message" class="mb-2">
   </div>
 
   <div id="output_emoji" class="grid grid-cols-8 auto-cols-min auto-rows-min h-52 my-5 mx-3 p-2 border border-gray-200 overflow-y-auto">
@@ -18,12 +16,17 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { CogIcon } from '@heroicons/vue/solid'
-import { RefreshIcon } from '@heroicons/vue/solid'
 
 const optionsIndexUrl = chrome.runtime.getURL("dist/options/index.html")
 
-async function onFetchEmojiList() {
+onMounted(() => {
+  // TODO: Popupを開くたびにfetchを実行しているためオーバーヘッドがある。cacheがあればcacheから表示するように書き換える
+  FetchEmojiList()
+})
+
+async function FetchEmojiList() {
   clearElements()
 
   let token = ''
@@ -32,6 +35,14 @@ async function onFetchEmojiList() {
       token = items.slackOauthToken
     }
   })
+
+  if (!token) {
+    createErrorElement()
+    return
+  } else {
+    clearErrorElement()
+  }
+
   const slackEmojiListUrl = "https://slack.com/api/emoji.list"
   const requestOptions = {
     method: "GET",
@@ -89,8 +100,22 @@ function createElements(imgSrc, imgAlt) {
   `)
 }
 
+function createErrorElement() {
+  const outputElement = document.getElementById('error_message')
+  outputElement.insertAdjacentHTML('beforeend', `
+  <span class="block text-sm font-medium text-center tracking-wide text-red-500">
+    歯車アイコンからSlack OAuth Tokenを保存してください。
+  </span>
+  `)
+}
+
 function clearElements() {
   const outputElement = document.getElementById('output_emoji')
   outputElement.innerHTML = ""
+}
+
+function clearErrorElement() {
+  const errorElement = document.getElementById('error_message')
+  errorElement.innerHTML = ""
 }
 </script>
