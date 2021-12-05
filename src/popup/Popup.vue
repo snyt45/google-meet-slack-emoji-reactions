@@ -12,14 +12,20 @@
   </div>
 
   <div id="output_emoji" class="grid grid-cols-8 auto-cols-min auto-rows-min h-52 my-5 mx-3 p-2 border border-gray-200 overflow-y-auto">
+    <section v-for="(value, name) in emojiList">
+      <button @click="sendMessage(value, name)" class="m-1 py-1 px-1 rounded-lg shadow-md transform transition hover:scale-110 duration-500 focus:outline-none">
+        <img :src="value" :alt="name">
+      </button>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { CogIcon } from '@heroicons/vue/solid'
 
 const optionsIndexUrl = chrome.runtime.getURL("dist/options/index.html")
+const emojiList = ref({})
 
 onMounted(() => {
   // TODO: Popupを開くたびにfetchを実行しているためオーバーヘッドがある。cacheがあればcacheから表示するように書き換える
@@ -27,8 +33,6 @@ onMounted(() => {
 })
 
 async function FetchEmojiList() {
-  clearElements()
-
   let token = ''
   await getSlackOauthToken().then(items => {
     if (items.slackOauthToken) {
@@ -62,7 +66,7 @@ async function FetchEmojiList() {
         const regexp = /^http/
         if ( !regexp.test(imgSrc) ) { return }
 
-        createElements(imgSrc, imgAlt)
+        emojiList.value[imgAlt] = imgSrc
       })
 
       // check for error response
@@ -88,18 +92,6 @@ function getSlackOauthToken() {
   })
 }
 
-function createElements(imgSrc, imgAlt) {
-  const outputElement = document.getElementById('output_emoji')
-  outputElement.insertAdjacentHTML('beforeend', `
-  <button class="m-1 py-1 px-1 rounded-lg shadow-md transform transition hover:scale-110 duration-500 focus:outline-none">
-    <img
-      src=${imgSrc}
-      alt=${imgAlt}
-    />
-  </button>
-  `)
-}
-
 function createErrorElement() {
   const outputElement = document.getElementById('error_message')
   outputElement.insertAdjacentHTML('beforeend', `
@@ -109,13 +101,12 @@ function createErrorElement() {
   `)
 }
 
-function clearElements() {
-  const outputElement = document.getElementById('output_emoji')
-  outputElement.innerHTML = ""
-}
-
 function clearErrorElement() {
   const errorElement = document.getElementById('error_message')
   errorElement.innerHTML = ""
+}
+
+function sendMessage(value, name) {
+  console.log(value, name)
 }
 </script>
