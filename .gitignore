@@ -1,6 +1,8 @@
 node_modules
 
 extension/manifest.json
+extension/background.js
+extension/background.css
 extension/dist
 
 .env.local
