@@ -8,6 +8,10 @@
     </a>
   </div>
 
+  <div id="user_info" class="block mt-2 text-sm font-medium text-center tracking-wide text-green-500">
+    こんにちは、{{ userName }} さん
+  </div>
+
   <div id="error_message" class="mb-2">
   </div>
 
@@ -26,10 +30,12 @@ import { CogIcon } from '@heroicons/vue/solid'
 
 const optionsIndexUrl = chrome.runtime.getURL("dist/options/index.html")
 const emojiList = ref({})
+const userName = ref('')
 
 onMounted(() => {
   // TODO: Popupを開くたびにfetchを実行しているためオーバーヘッドがある。cacheがあればcacheから表示するように書き換える
   FetchEmojiList()
+  FetchUserName()
 })
 
 async function FetchEmojiList() {
@@ -106,7 +112,62 @@ function clearErrorElement() {
   errorElement.innerHTML = ""
 }
 
-function sendMessage(value, name) {
-  console.log(value, name)
+async function FetchUserName() {
+  // cacheがある場合、cacheから取得
+  await getUserName().then(items => {
+    if (items.userName) {
+      console.log('cacheから取得しました')
+      userName.value = items.userName
+    } else {
+      console.log('cacheがないため、新規取得しました')
+      // ChromeアプリからGoogleログインしてトークン取得
+      chrome.identity.getAuthToken(
+        {interactive: true},
+        (token: string) => {
+          console.log('token', token)
+
+          const userInfoUrl = "https://www.googleapis.com/oauth2/v1/userinfo"
+          const requestOptions = {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": 'Bearer ' + token
+            },
+          }
+
+          fetch(userInfoUrl, requestOptions)
+            .then(async response => {
+              const jsonData = await response.json()
+
+              // check for error response
+              if (jsonData.error) {
+                return Promise.reject(jsonData.error)
+              }
+              // set user name
+              userName.value = jsonData.name
+              // set local storage
+              chrome.storage.local.set({'userName': jsonData.name})
+
+              console.log('get userInfo')
+            })
+            .catch(error => {
+              // set error message
+              console.error('There was an error!', error)
+            })
+        }
+      )
+    }
+  })
+}
+
+function getUserName() {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.get(["userName"], (items) => {
+      if (chrome.runtime.lastError) {
+        return reject(chrome.runtime.lastError)
+      }
+      resolve(items)
+    })
+  })
 }
 </script>

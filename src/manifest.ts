@@ -29,7 +29,10 @@ const getManifest = () => {
     ],
     oauth2: {
       client_id: '193910923857-psarj8ct1c9ui0f4e9glmfehg5mcdhlt.apps.googleusercontent.com',
-      scopes: ['https://www.googleapis.com/auth/userinfo.email']
+      scopes: [
+        'https://www.googleapis.com/auth/userinfo.email',
+        'https://www.googleapis.com/auth/userinfo.profile',
+      ]
     }
   }
 }
