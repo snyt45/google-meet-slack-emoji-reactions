@@ -10,15 +10,15 @@ const getManifest = () => {
     content_scripts: [
       {
         matches: ['http://meet.google.com/*', 'https://meet.google.com/*'],
-        js: ['./dist/contentScripts/index.js'],
+        js: ['dist/contentScripts/index.js'],
       },
     ],
-    options_page: './dist/options/index.html',
+    options_page: 'dist/options/index.html',
     background: {
-      service_worker: './background.js'
+      service_worker: 'background.js'
     },
     action: {
-      default_popup: './dist/popup/index.html'
+      default_popup: 'dist/popup/index.html'
     },
     permissions: [
       'identity',
