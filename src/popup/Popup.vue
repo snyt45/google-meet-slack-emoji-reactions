@@ -179,10 +179,11 @@ async function getMeetRoomId() {
     meetRoomId.value = tabs[0].url.split('/')[3]
 
     // send meetRoomId to contents script
-    // TODO: meet以外のページでpopup開くとconsoleでエラーが出るため対応する
-    chrome.tabs.sendMessage(tabs[0].id, { meetRoomId: meetRoomId.value }, function(response){
-      console.log(response)
-    })
+    if (meetRoomId.value) {
+      chrome.tabs.sendMessage(tabs[0].id, { meetRoomId: meetRoomId.value }, function(response){
+        console.log(response)
+      })
+    }
   })
 }
 
