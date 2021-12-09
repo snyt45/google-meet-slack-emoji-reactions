@@ -8,9 +8,7 @@ const meetRoomId = ref('')
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     console.log('messageを受信しました', request)
-
     meetRoomId.value = request.meetRoomId
-    sendResponse({farewell: "goodbye"})
   }
 )
 
