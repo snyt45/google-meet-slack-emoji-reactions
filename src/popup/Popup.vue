@@ -177,6 +177,11 @@ function getUserName() {
 async function getMeetRoomId() {
   chrome.tabs.query({active: true, currentWindow: true}, tabs => {
     meetRoomId.value = tabs[0].url.split('/')[3]
+
+    // send meetRoomId to contents script
+    chrome.tabs.sendMessage(tabs[0].id, { meetRoomId: meetRoomId.value }, function(response){
+      console.log(response)
+    })
   })
 }
 
