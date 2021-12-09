@@ -27,15 +27,18 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { CogIcon } from '@heroicons/vue/solid'
+import { supabase } from '../utils/supabase'
 
 const optionsIndexUrl = chrome.runtime.getURL("dist/options/index.html")
 const emojiList = ref({})
 const userName = ref('')
+const meetRoomId = ref('')
 
 onMounted(() => {
   // TODO: Popupを開くたびにfetchを実行しているためオーバーヘッドがある。cacheがあればcacheから表示するように書き換える
   FetchEmojiList()
   FetchUserName()
+  getMeetRoomId()
 })
 
 async function FetchEmojiList() {
@@ -169,5 +172,31 @@ function getUserName() {
       resolve(items)
     })
   })
+}
+
+async function getMeetRoomId() {
+  chrome.tabs.query({active: true, currentWindow: true}, tabs => {
+    meetRoomId.value = tabs[0].url.split('/')[3]
+  })
+}
+
+// supabaseのreactionsテーブルにinsertする
+async function sendMessage(imgSrc, imgAlt) {
+  console.log('sendMessage: ', meetRoomId.value, userName.value, imgSrc, imgAlt)
+
+  if (meetRoomId.value) {
+    const { data, error } = await supabase
+    .from('reactions')
+    .insert([
+      {
+        meet_room_id: meetRoomId.value,
+        user_name: userName.value,
+        img_src: imgSrc,
+        img_alt: imgAlt
+      }
+    ])
+  } else {
+    console.log('Not meetRoomId')
+  }
 }
 </script>

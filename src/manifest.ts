@@ -11,6 +11,7 @@ const getManifest = () => {
       {
         matches: ['http://meet.google.com/*', 'https://meet.google.com/*'],
         js: ['dist/contentScripts/index.js'],
+        css: ['dist/contentScripts/index.css'],
       },
     ],
     options_page: 'dist/options/index.html',
@@ -22,7 +23,8 @@ const getManifest = () => {
     },
     permissions: [
       'identity',
-      'storage'
+      'storage',
+      'tabs'
     ],
     host_permissions: [
       'https://slack.com/api/*'
