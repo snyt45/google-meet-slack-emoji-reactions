@@ -19,7 +19,13 @@ const getManifest = () => {
       service_worker: 'background.js'
     },
     action: {
+      default_icon: 'assets/icon-48.png',
       default_popup: 'dist/popup/index.html'
+    },
+    icons: {
+      16: 'assets/icon-16.png',
+      48: 'assets/icon-48.png',
+      128: 'assets/icon-128.png',
     },
     permissions: [
       'identity',
