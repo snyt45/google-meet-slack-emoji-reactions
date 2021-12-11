@@ -1,7 +1,7 @@
 <template>
   <div class='container mx-auto my-5 w-2/4'>
     <header>
-      <h1 class="text-xl text-center font-bold my-2">Google Meet Slack Emoji Reactions Settings</h1>
+      <h1 class="text-xl text-center font-bold my-2">Emoji Reactions Settings</h1>
     </header>
     <div class="container mx-auto my-3 w-4/5">
       <form>

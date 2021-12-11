@@ -4,8 +4,8 @@ import { r } from '../scripts/utils'
 const getManifest = () => {
   return {
     manifest_version: 3,
-    name: 'Google Meet Slack Emoji Reactions',
-    description: 'Google MeetにSlackの絵文字資産を使ったリアクション機能を提供します。',
+    name: 'Emoji Reactions',
+    description: 'Slackのワークスペースにある絵文字リストを使って、Google meetでリアクションすることができます。',
     version: '0.1',
     content_scripts: [
       {

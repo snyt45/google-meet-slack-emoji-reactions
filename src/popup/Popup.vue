@@ -1,7 +1,7 @@
 <template>
   <div class="flex justify-between items-center p-2 bg-green-500">
     <h1 class="text-lg text-bold text-white">
-      Google Meet Slack Emoji Reactions &#x1F44D;
+      Emoji Reactions &#x1F44D;
     </h1>
     <a :href="optionsIndexUrl" target="_blank" class="hover:opacity-75">
       <CogIcon class="h-6 w-6 text-gray-700"/>
