@@ -38,7 +38,7 @@ supabase
         `
       })
     } else {
-      console.log('meetRoomIdが違います')
+      console.log('I didnt subscribe because the meet room id is different')
     }
   })
   .subscribe()

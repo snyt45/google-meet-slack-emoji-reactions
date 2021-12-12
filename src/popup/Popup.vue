@@ -8,10 +8,15 @@
     </a>
   </div>
 
-  <div id="error_message" class="mb-2">
+  <div id="error_message" class="text-sm font-medium text-center tracking-wide text-red-500 mb-2">
+    {{ errorMsg }}
   </div>
 
-  <div id="output_emoji" class="grid grid-cols-8 auto-cols-min auto-rows-min h-52 my-5 mx-3 p-2 border border-gray-200 overflow-y-auto">
+  <div
+    v-show="canEmojiReaction"
+    id="output_emoji"
+    class="grid grid-cols-8 auto-cols-min auto-rows-min h-52 my-5 mx-3 p-2 border border-gray-200 overflow-y-auto"
+  >
     <section v-for="(value, name) in emojiList">
       <button @click="sendMessage(value, name)" class="m-1 py-1 px-1 rounded-lg shadow-md transform transition hover:scale-110 duration-500 focus:outline-none">
         <img :src="value" :alt="name">
@@ -21,42 +26,73 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { CogIcon } from '@heroicons/vue/solid'
 import { supabase } from '../utils/supabase'
 
 const optionsIndexUrl = chrome.runtime.getURL("dist/options/index.html")
-const emojiList = ref({})
+const slackOauthToken = ref('')
 const userName = ref('')
 const meetRoomId = ref('')
+const canEmojiReaction = computed(
+  () => !!isSettingOK.value && !!meetRoomId.value
+)
+const isSettingOK = computed(
+  () => !!slackOauthToken.value && !!userName.value
+)
+const errorMsg = ref('')
+const emojiList = ref({})
 
-onMounted(() => {
-  // TODO: Popupを開くたびにfetchを実行しているためオーバーヘッドがある。cacheがあればcacheから表示するように書き換える
-  FetchEmojiList()
-  getMeetRoomId()
-})
-
-async function FetchEmojiList() {
-  let token = ''
-  await getSlackOauthToken().then(items => {
-    if (items.slackOauthToken) {
-      token = items.slackOauthToken
+onMounted(async () => {
+  // local storageにキャッシュがあればキャッシュを使う
+  await getAllStorageLocalData().then(data => {
+    const cacheToken = data?.slackOauthToken
+    if (cacheToken) {
+      slackOauthToken.value = cacheToken
+    }
+    const cacheUserName = data?.userName
+    if (cacheUserName) {
+      userName.value = cacheUserName
     }
   })
 
-  if (!token) {
-    createErrorElement()
-    return
-  } else {
-    clearErrorElement()
-  }
+  // get meet room id
+  chrome.tabs.query({active: true, currentWindow: true}, tabs => {
+    const url = new URL(tabs[0].url)
+    // ホスト名がmeet.google.comの場合
+    if (url.hostname == "meet.google.com") {
+      console.log("hostname meet.google.com")
+      meetRoomId.value = url.pathname.slice(1)
+    } else {
+      console.log("hostname not meet.google.com")
+      meetRoomId.value = ''
+    }
 
+    // send meetRoomId to contents script
+    if (meetRoomId.value) {
+      chrome.tabs.sendMessage(tabs[0].id, { meetRoomId: meetRoomId.value }, function(response){
+        console.log(`send meetRoomId ${meetRoomId.value} to contents script`)
+      })
+    }
+
+    if (canEmojiReaction.value) {
+      FetchEmojiList()
+      errorMsg.value = ''
+    } else if (!isSettingOK.value) {
+      errorMsg.value = '歯車アイコンから設定を行ってください'
+    } else if (!meetRoomId.value) {
+      errorMsg.value = 'meetを開いてください'
+    }
+  })
+})
+
+function FetchEmojiList() {
   const slackEmojiListUrl = "https://slack.com/api/emoji.list"
   const requestOptions = {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": 'Bearer ' + token
+      "Authorization": 'Bearer ' + slackOauthToken.value
     },
   }
 
@@ -85,44 +121,6 @@ async function FetchEmojiList() {
     })
 }
 
-function getSlackOauthToken() {
-  return new Promise((resolve, reject) => {
-    chrome.storage.local.get(["slackOauthToken"], (items) => {
-      if (chrome.runtime.lastError) {
-        return reject(chrome.runtime.lastError)
-      }
-      resolve(items)
-    })
-  })
-}
-
-function createErrorElement() {
-  const outputElement = document.getElementById('error_message')
-  outputElement.insertAdjacentHTML('beforeend', `
-  <span class="block text-sm font-medium text-center tracking-wide text-red-500">
-    歯車アイコンからSlack OAuth Tokenを保存してください。
-  </span>
-  `)
-}
-
-function clearErrorElement() {
-  const errorElement = document.getElementById('error_message')
-  errorElement.innerHTML = ""
-}
-
-async function getMeetRoomId() {
-  chrome.tabs.query({active: true, currentWindow: true}, tabs => {
-    meetRoomId.value = tabs[0].url.split('/')[3]
-
-    // send meetRoomId to contents script
-    if (meetRoomId.value) {
-      chrome.tabs.sendMessage(tabs[0].id, { meetRoomId: meetRoomId.value }, function(response){
-        console.log(response)
-      })
-    }
-  })
-}
-
 // supabaseのreactionsテーブルにinsertする
 async function sendMessage(imgSrc, imgAlt) {
   console.log('sendMessage: ', meetRoomId.value, userName.value, imgSrc, imgAlt)
@@ -141,5 +139,16 @@ async function sendMessage(imgSrc, imgAlt) {
   } else {
     console.log('Not meetRoomId')
   }
+}
+
+function getAllStorageLocalData() {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.get(null, (data) => {
+      if (chrome.runtime.lastError) {
+        return reject(chrome.runtime.lastError)
+      }
+      resolve(data)
+    })
+  })
 }
 </script>
