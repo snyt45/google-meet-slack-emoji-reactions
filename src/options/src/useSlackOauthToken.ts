@@ -41,17 +41,6 @@ export const useSlackOauthToken = () => {
       })
   }
 
-  const getCacheSlackOauthToken = () => {
-    return new Promise((resolve, reject) => {
-      chrome.storage.local.get('slackOauthToken', (data) => {
-        if (chrome.runtime.lastError) {
-          return reject(chrome.runtime.lastError)
-        }
-        resolve(data)
-      })
-    })
-  }
-
   watch(
     () => slackOauthToken.value,
     (token, _prevTokne) => {
@@ -63,7 +52,6 @@ export const useSlackOauthToken = () => {
     slackOauthToken,
     slackOauthTokenErrorMsg,
     isValidSlackOauthToken,
-    validSlackOAuthTokenConfirm,
-    getCacheSlackOauthToken
+    validSlackOAuthTokenConfirm
   }
 }
