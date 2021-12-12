@@ -1,32 +1,18 @@
-import { reactive, computed } from 'vue'
-
-type slackOauthToken = {
-    token: string,
-    errorMessage: string,
-    isValid: boolean
-}
+import { ref, watch } from 'vue'
 
 export const useSlackOauthToken = () => {
-  const slackOauthToken = reactive({
-    token: '',
-    errorMessage: '',
-    isValid: false
-  })
-
-  const setSlackOauthToken = (inputData: slackOauthToken) => {
-    slackOauthToken.token = inputData?.token || ''
-    slackOauthToken.errorMessage = inputData?.errorMessage || ''
-    slackOauthToken.isValid = inputData?.isValid || false
-  }
+  const slackOauthToken = ref('')
+  const slackOauthTokenErrorMsg = ref('')
+  const isValidSlackOauthToken = ref(false)
 
   // 有効なSlackOAuthTokenか確認
-  const validSlackOAuthTokenConfirm = () => {
+  const validSlackOAuthTokenConfirm = (token: string) => {
     const slackAuthTestUrl = "https://slack.com/api/auth.test/"
     const requestOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": 'Bearer ' + slackOauthToken.token
+        "Authorization": 'Bearer ' + token
       },
     }
 
@@ -37,19 +23,21 @@ export const useSlackOauthToken = () => {
         if (data.error) {
           return Promise.reject(data.error)
         }
-        // clear error message
-        slackOauthToken.errorMessage = ''
-        // set local storage
-        chrome.storage.local.set({'slackOauthToken': slackOauthToken.token}, function() {
-          console.log('set local storage')
-          // show check mark
-          slackOauthToken.isValid = true
+
+        slackOauthTokenErrorMsg.value = ''  // clear error message
+        isValidSlackOauthToken.value = true // show check mark
+        // set cache slackOauthToken
+        chrome.storage.local.set({'slackOauthToken': token}, function() {
+          console.log('set cache slackOauthToken')
         })
       })
       .catch(error => {
-        // set error message
-        slackOauthToken.errorMessage = error
-        console.error('There was an error!', error)
+        slackOauthTokenErrorMsg.value = error // set error message
+        isValidSlackOauthToken.value = false  // hidden check mark
+        // remove cache slackOauthToken
+        chrome.storage.local.remove('slackOauthToken', function() {
+          console.log('remove cache slackOauthToken')
+        })
       })
   }
 
@@ -64,25 +52,18 @@ export const useSlackOauthToken = () => {
     })
   }
 
-  const clearCacheSlackOauthToken = () => {
-    const inputData = {
-      token: '',        // clear slack oauth token
-      errorMessage: '', // clear error message
-      isValid: false,   // hidden check mark
+  watch(
+    () => slackOauthToken.value,
+    (token, _prevTokne) => {
+      validSlackOAuthTokenConfirm(token)
     }
-    setSlackOauthToken(inputData)
-
-    // clear local storage
-    chrome.storage.local.clear(function() {
-      console.log('clear local storage')
-    })
-  }
+  )
 
   return {
     slackOauthToken,
-    setSlackOauthToken,
+    slackOauthTokenErrorMsg,
+    isValidSlackOauthToken,
     validSlackOAuthTokenConfirm,
-    getCacheSlackOauthToken,
-    clearCacheSlackOauthToken
+    getCacheSlackOauthToken
   }
 }
